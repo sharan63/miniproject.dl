@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Return Module</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px #0002;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e3a5f;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        select {
+            border: 1px solid #ccc;
+            background: white;
+        }
+
+        button {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2e5d8a;
+        }
+
+        #message {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            overflow-wrap: anywhere;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        li {
+            margin: 12px 0;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Book Return Module</h1>
+
+        <label for="issuedBook">Select Issued Book</label>
+        <select id="issuedBook">
+            <option value="">-- Select Issued Book --</option>
+        </select>
+
+        <button type="button" onclick="returnBook()">
+            Return Book
+        </button>
+
+        <p id="message" role="status" aria-live="polite"></p>
+
+        <h3>Returned Books</h3>
+        <ul id="returnedList"></ul>
+    </div>
+
+    <script>
+        // Get book and issue details from localStorage
+        let books = JSON.parse(
+            localStorage.getItem("libraryBooks")
+        ) || [];
+
+        let issues = JSON.parse(
+            localStorage.getItem("issuedBooks")
+        ) || [];
+
+        let returnedBooks = JSON.parse(
+            localStorage.getItem("returnedBooks")
+        ) || [];
+
+        // Display books that have not been returned
+        function displayIssuedBooks() {
+            const select = document.getElementById("issuedBook");
+
+            select.innerHTML =
+                '<option value="">-- Select Issued Book --</option>';
+
+            issues.forEach(function(issue, index) {
+                const option = document.createElement("option");
+
+                option.value = index;
+                option.textContent =
+                    issue.memberName + " - " + issue.bookTitle;
+
+                select.appendChild(option);
+            });
+        }
+
+        // Return selected book
+        function returnBook() {
+            const select = document.getElementById("issuedBook");
+            const message = document.getElementById("message");
+
+            message.textContent = "";
+            message.className = "";
+
+            if (select.value === "") {
+                message.textContent = "Please select an issued book.";
+                message.className = "error";
+                return;
+            }
+
+            const index = Number(select.value);
+            const issue = issues[index];
+
+            if (!issue) {
+                message.textContent = "Issue record not found.";
+                message.className = "error";
+                return;
+            }
+
+            // Confirm book return
+            const confirmed = confirm(
+                "Confirm return of " + issue.bookTitle +
+                " by " + issue.memberName + "?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            // Find the matching book
+            const book = books.find(function(b) {
+                return b.id === issue.bookId;
+            });
+
+            if (!book) {
+                message.textContent =
+                    "Book record not found. Return was not saved.";
+                message.className = "error";
+                return;
+            }
+
+            // Increase book quantity
+            book.qty++;
+
+            // Update issue record with return details
+            issue.returnDate = new Date().toLocaleDateString();
+            issue.status = "Returned";
+
+            returnedBooks.push(issue);
+
+            // Remove from active issued-book records
+            issues.splice(index, 1);
+
+            // Save updated records
+            localStorage.setItem(
+                "libraryBooks",
+                JSON.stringify(books)
+            );
+
+            localStorage.setItem(
+                "issuedBooks",
+                JSON.stringify(issues)
+            );
+
+            localStorage.setItem(
+                "returnedBooks",
+                JSON.stringify(returnedBooks)
+            );
+
+            // Display success message
+            message.textContent =
+                "Book returned successfully!";
+            message.className = "success";
+
+            displayIssuedBooks();
+            displayReturnedBooks();
+        }
+
+        // Show returned-book history
+        function displayReturnedBooks() {
+            const list = document.getElementById("returnedList");
+            list.innerHTML = "";
+
+            returnedBooks.forEach(function(issue) {
+                const li = document.createElement("li");
+
+                li.textContent =
+                    issue.memberName + " - " +
+                    issue.bookTitle + " - Returned: " +
+                    issue.returnDate;
+
+                list.appendChild(li);
+
+                 window.location.href = "dashboard.html";
+            });
+
+        }
+
+        displayIssuedBooks();
+        displayReturnedBooks();
+    </script>
+
+</body>
+</html>
