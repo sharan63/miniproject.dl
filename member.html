@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digital Library Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <style>
+        * {
+            
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f3f7;
+    margin: 0;
+    padding: 30px;
+}
+
+.container {
+    width: 85%;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ccc;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #1e3a5f;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+input {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 12px;
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #3498db;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #1e3a5f;
+    color: white;
+}
+
+.delete-btn {
+    background: #e74c3c;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+
+@media (max-width: 600px) {
+    .container {
+        width: 95%;
+        padding: 10px;
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 550px;
+    }
+}
+
+        }
+    </style>
+
+    <div class="container">
+        <h1>Digital Library</h1>
+        <h2>Member Management</h2>
+
+        <div class="form">
+            <input type="text" id="name" placeholder="Enter Member Name">
+            <input type="email" id="email" placeholder="Enter Email">
+            <input type="text" id="phone" placeholder="Enter Phone Number">
+
+            <button onclick="addMember()">Add Member</button>
+        </div>
+
+        <h2>Member List</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="memberList"></tbody>
+        </table>
+    </div>
+
+    <script>
+        
+let members = JSON.parse(localStorage.getItem("members")) || [];
+
+function displayMembers() {
+
+    let list = document.getElementById("memberList");
+
+    list.innerHTML = "";
+
+    members.forEach((member, index) => {
+
+        list.innerHTML += `
+            <tr>
+                <td>${member.id}</td>
+                <td>${member.name}</td>
+                <td>${member.email}</td>
+                <td>${member.phone}</td>
+                <td>
+                    <button class="delete-btn"
+                    onclick="deleteMember(${index})">
+                    Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function addMember() {
+
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let phone = document.getElementById("phone").value.trim();
+
+    if (name === "" || email === "" || phone === "") {
+        alert("Please fill all fields");
+        return;
+    }
+
+    let member = {
+        id: Date.now(),
+        name: name,
+        email: email,
+        phone: phone
+    };
+
+    members.push(member);
+
+    localStorage.setItem("members", JSON.stringify(members));
+
+    alert("Member Added Successfully!");
+
+    document.getElementById("name").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("phone").value = "";
+
+    displayMembers();
+}
+
+function deleteMember(index) {
+
+    if (confirm("Are you sure you want to delete this member?")) {
+
+        members.splice(index, 1);
+
+        localStorage.setItem("members", JSON.stringify(members));
+
+        alert("Member Deleted Successfully!");
+
+        displayMembers();
+
+        window.location.href = "member.html";
+    }
+}
+
+displayMembers();
+
+    </script>
+</body>
+</html>
